@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Finance Tracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="movement">
+        <div class="form">
+            <div class="form-input" id="title">
+                <h2>Finance Tracker</h2>
+            </div>
+            <form action="/" method="POST">
+                <div class="form-input">
+                    <p class="toggle-state">Income / <b>Expense</b></p>
+                    <div class="toggle-container">
+                        <input type="checkbox" id="toggle" name="toggle" class="toggle-input" value="expense">
+                        <label for="toggle" class="toggle-label"></label>
+                    </div>
+                </div>
+                <div class="form-input">
+                    <input type="text" placeholder="Amount" name="amount" id="amount">
+                    <select type="text"  name="currency" id="currency">    
+                        <% currencies.forEach(function(currency) { %>
+                            <option value=<%= currency %>><%= currency %></option>  
+                          <% }); %>
+                    </select>
+                </div>
+                <div class="form-input" id="explanation"> 
+                    <input type="text" placeholder="Explanation" name="explanation" id="explanation"> 
+                </div>
+                <div class="form-input">
+                    <button  id="btn-add" type="submit">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="transitions">
+        <div class="transitions-inner">
+            <div class="form-input">
+                <% let total_income = 0 %>
+                <% incomes.forEach(function(income) { %>        
+                    <% total_income += income.dollarValue; %>
+                <% }); %>
+                <% let total_expense = 0 %>
+                <% expenses.forEach(function(expense) { %>
+                    <% total_expense += expense.dollarValue; %>
+                <% }); %>
+
+                <form action="/filter" method="post">
+                    <select type="text"  name="currency2" id="currency2" onChange="this.form.submit()">    
+                        <% currencies.forEach(function(currency) { %>
+                            <option value=<%= currency %>><%= currency %></option>  
+                        <% }); %>
+                    </select>
+                </form>
+                <div class="totals">    
+                    <h4 >Total Income: <%= (total_income*rateOfcurrency).toFixed(2) %> <%=currencyName%></h4>
+                    <h4 >Total Expense: <%= (total_expense*rateOfcurrency).toFixed(2)  %> <%=currencyName%></h4>
+                    <h4 >Balance: <%= (total_income*rateOfcurrency-total_expense*rateOfcurrency).toFixed(2)  %> <%=currencyName%></h4>
+                </div>
+            </div>
+
+            <div class="form-input">
+                <button id="incomes-tab" class="tab-button" name="income" onclick="filterTransitions('income')">Incomes</button>
+                <button id="expenses-tab" class="tab-button" name="expense" onclick="filterTransitions('expense')">Expenses</button>
+            </div>
+
+            <% transitions.forEach(function(transition) { %>
+                <div class="transition-item" title="<%= transition.type %>" style="box-shadow:<%= transition.type === 'income' ? '0 2px 5px #55c555' : '0 2px 5px #f04a24ed' %>;">
+                    <h3 style="color: <%= transition.type === 'income' ? '#55c555' : '#f04a24' %>;"><b><%= transition.amount %></b>  - <%= transition.currency %> </h3>
+                    <p><b>Explanation: </b><%= transition.explanation %></p>
+                    <p><%= transition.date %></p>
+                    <div id="delete-container">
+                        <form action="/delete" method="post">
+                            <button type="submit" name="delete" id="delete" value="<%= transition.id %>" onChange="this.form.submit()">Delete</button>
+                        </form>
+                    </div>
+                </div>
+              <% }); %>
+        </div>
+    </div>
+
+
+    <script>
+
+        const toggle = document.querySelector("#toggle");
+        toggle.addEventListener('change', function() {
+        if (toggle.checked) {
+            toggle.value = "income";
+            document.querySelector(".form-input").style.backgroundColor = "#55c555";
+            document.querySelector("button").style.backgroundColor = "#55c555";
+            document.querySelector(".toggle-state").innerHTML="<p><b>Income </b>/ Expense</p>"
+        } else {
+            toggle.value = "expense";
+            document.querySelector(".form-input").style.backgroundColor = "#f04a24";
+            document.querySelector("button").style.backgroundColor = "#f04a24";
+            document.querySelector(".toggle-state").innerHTML=" <p>Income /<b> Expense</b></p>"
+        }
+        });
+
+        function filterTransitions(type) {
+            const items = document.querySelectorAll('.transition-item');
+            if(type === "income"){
+                if(document.getElementById("incomes-tab").style.backgroundColor === "gray"){
+
+                    document.getElementById("incomes-tab").style.backgroundColor = "#55c555";
+                    items.forEach(function(item) {
+                            item.style.display = 'block';
+                        });
+                }else{
+                    document.getElementById("incomes-tab").style.backgroundColor = "gray";
+                    document.getElementById("expenses-tab").style.backgroundColor = "#f04a24";
+                    items.forEach(function(item) {
+                        if (item.title===type) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                }           
+            }
+            if(type === "expense"){
+                if(document.getElementById("expenses-tab").style.backgroundColor === "gray"){
+                    document.getElementById("expenses-tab").style.backgroundColor = "#f04a24";
+                    items.forEach(function(item) {
+                            item.style.display = 'block';
+                        });
+                }else{
+                    document.getElementById("expenses-tab").style.backgroundColor = "gray";
+                    document.getElementById("incomes-tab").style.backgroundColor = "#55c555";
+                    items.forEach(function(item) {
+                        if (item.title===type) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                        });
+                }
+
+            }
+
+        }   
+
+        </script>
+</body>
+</html>
